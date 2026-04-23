@@ -439,18 +439,18 @@ function renderDashboard(registros) {
 function initFiltroDashboard() {
   document.getElementById('btnFiltrar').addEventListener('click', aplicarFiltro);
   document.getElementById('btnLimpiarFiltro').addEventListener('click', () => {
-    document.getElementById('filtroFraccionamiento').value = '';
+    document.getElementById('filtroEmpresaComercial').value = '';
     renderDashboard(todosLosRegistros);
   });
-  document.getElementById('filtroFraccionamiento').addEventListener('keydown', (e) => {
+  document.getElementById('filtroEmpresaComercial').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') aplicarFiltro();
   });
 }
 
 function aplicarFiltro() {
-  const q = document.getElementById('filtroFraccionamiento').value.trim().toLowerCase();
+  const q = document.getElementById('filtroEmpresaComercial').value.trim().toLowerCase();
   const filtrados = q
-    ? todosLosRegistros.filter(r => String(r.fraccionamiento || '').toLowerCase().includes(q))
+    ? todosLosRegistros.filter(r => String(r.empresa_comercial || '').toLowerCase().includes(q))
     : todosLosRegistros;
   renderDashboard(filtrados);
 }
