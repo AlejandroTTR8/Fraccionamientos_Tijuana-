@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Viviendas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── SIDEBAR ─────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar__logo">
+      <div class="sidebar__logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="3" width="9" height="9" rx="1" fill="currentColor" opacity=".9"/>
+          <rect x="13" y="3" width="9" height="9" rx="1" fill="currentColor" opacity=".5"/>
+          <rect x="2" y="14" width="9" height="9" rx="1" fill="currentColor" opacity=".5"/>
+          <rect x="13" y="14" width="9" height="9" rx="1" fill="currentColor" opacity=".9"/>
+        </svg>
+      </div>
+      <span>DataVivienda</span>
+    </div>
+
+    <nav class="sidebar__nav">
+      <button class="nav-btn active" data-tab="captura">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Captura
+      </button>
+      <button class="nav-btn" data-tab="dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-btn" data-tab="registros">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Registros
+      </button>
+    </nav>
+
+    <div class="sidebar__stats" id="sidebarStats">
+      <div class="stat-mini">
+        <span class="stat-mini__label">Total registros</span>
+        <span class="stat-mini__value" id="statTotal">—</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- HEADER -->
+    <header class="topbar">
+      <div class="topbar__title" id="pageTitle">Nueva Captura</div>
+      <div class="topbar__actions">
+        <span class="topbar__date" id="topbarDate"></span>
+      </div>
+    </header>
+
+    <!-- ── TAB: CAPTURA ───────────────────────────────── -->
+    <section class="tab-panel active" id="tab-captura">
+      <div class="panel-header">
+        <h2>Registro de Vivienda</h2>
+        <p>Complete todos los campos. Los datos se almacenarán en el archivo Excel.</p>
+      </div>
+
+      <!-- Mensaje de estado -->
+      <div class="alert hidden" id="formAlert"></div>
+
+      <form id="capturaForm" novalidate>
+        <div class="form-grid">
+
+          <!-- Institución -->
+          <div class="field-group">
+            <label for="institucion">Institución <span class="req">*</span></label>
+            <input type="text" id="institucion" name="institucion" placeholder="Ej: BBVA, HSBC…" />
+            <span class="field-error" id="err-institucion"></span>
+          </div>
+
+          <!-- Año -->
+          <div class="field-group">
+            <label for="anio">Año <span class="req">*</span></label>
+            <input type="number" id="anio" name="anio" placeholder="2010 – 2030" min="2010" max="2030" />
+            <span class="field-error" id="err-anio"></span>
+          </div>
+
+          <!-- Mes -->
+          <div class="field-group">
+            <label for="mes">Mes <span class="req">*</span></label>
+            <input type="text" id="mes" name="mes" placeholder="Ej: abril o 4" />
+            <span class="field-hint">Acepta nombre o número (1-12)</span>
+            <span class="field-error" id="err-mes"></span>
+          </div>
+
+          <!-- Estado -->
+          <div class="field-group">
+            <label for="estado">Estado <span class="req">*</span></label>
+            <input type="text" id="estado" name="estado" placeholder="Ej: Jalisco" />
+            <span class="field-error" id="err-estado"></span>
+          </div>
+
+          <!-- Municipio -->
+          <div class="field-group">
+            <label for="municipio">Municipio <span class="req">*</span></label>
+            <input type="text" id="municipio" name="municipio" placeholder="Ej: Guadalajara" />
+            <span class="field-error" id="err-municipio"></span>
+          </div>
+
+          <!-- CP -->
+          <div class="field-group">
+            <label for="cp">Código Postal <span class="req">*</span></label>
+            <input type="text" id="cp" name="cp" placeholder="5 dígitos" maxlength="5" />
+            <span class="field-error" id="err-cp"></span>
+          </div>
+
+          <!-- Empresa Comercial -->
+          <div class="field-group field-group--wide">
+            <label for="empresa_comercial">Empresa Comercial <span class="req">*</span></label>
+            <input type="text" id="empresa_comercial" name="empresa_comercial" placeholder="Nombre de la empresa" />
+            <span class="field-error" id="err-empresa_comercial"></span>
+          </div>
+
+          <!-- Valor -->
+          <div class="field-group">
+            <label for="valor">Valor <span class="req">*</span></label>
+            <div class="input-prefix">
+              <span>$</span>
+              <input type="number" id="valor" name="valor" placeholder="Mín. 300,000" min="300000" step="1000" />
+            </div>
+            <span class="field-error" id="err-valor"></span>
+          </div>
+
+          <!-- Segmento -->
+          <div class="field-group">
+            <label for="segmento">Segmento <span class="req">*</span></label>
+            <input type="text" id="segmento" name="segmento" placeholder="Ej: Medio, Residencial…" />
+            <span class="field-error" id="err-segmento"></span>
+          </div>
+
+          <!-- Count -->
+          <div class="field-group">
+            <label for="count">Count <span class="req">*</span></label>
+            <input type="number" id="count" name="count" placeholder="Número de unidades" min="1" />
+            <span class="field-error" id="err-count"></span>
+          </div>
+
+          <!-- Tipo de Vivienda -->
+          <div class="field-group">
+            <label for="tipo_vivienda">Tipo de Vivienda <span class="req">*</span></label>
+            <select id="tipo_vivienda" name="tipo_vivienda">
+              <option value="">— Seleccione —</option>
+              <option value="VIVIENDA NUEVA">VIVIENDA NUEVA</option>
+              <option value="VIVIENDA USADA">VIVIENDA USADA</option>
+            </select>
+            <span class="field-error" id="err-tipo_vivienda"></span>
+          </div>
+
+          <!-- Grupo -->
+          <div class="field-group">
+            <label for="grupo">Grupo <span class="req">*</span></label>
+            <select id="grupo" name="grupo">
+              <option value="">— Seleccione —</option>
+              <option value="Bancos">Bancos</option>
+              <option value="Infonavit">Infonavit</option>
+              <option value="Fovissste">Fovissste</option>
+            </select>
+            <span class="field-error" id="err-grupo"></span>
+          </div>
+
+          <!-- Fraccionamiento -->
+          <div class="field-group field-group--wide">
+            <label for="fraccionamiento">Fraccionamiento <span class="req">*</span></label>
+            <input type="text" id="fraccionamiento" name="fraccionamiento" placeholder="Nombre del fraccionamiento" />
+            <span class="field-error" id="err-fraccionamiento"></span>
+          </div>
+
+        </div><!-- /form-grid -->
+
+        <div class="form-actions">
+          <button type="button" class="btn btn--ghost" id="btnLimpiar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+            Limpiar
+          </button>
+          <button type="submit" class="btn btn--primary" id="btnGuardar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Guardar Registro
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ── TAB: DASHBOARD ─────────────────────────────── -->
+    <section class="tab-panel" id="tab-dashboard">
+      <div class="panel-header">
+        <h2>Dashboard</h2>
+        <p>Visualización y análisis de los registros capturados.</p>
+      </div>
+
+      <!-- Filtro -->
+      <div class="filter-bar">
+        <label for="filtroFraccionamiento">Filtrar por Fraccionamiento:</label>
+        <div class="filter-bar__input">
+          <input type="text" id="filtroFraccionamiento" placeholder="Escribe para filtrar…" />
+          <button class="btn btn--sm" id="btnFiltrar">Aplicar</button>
+          <button class="btn btn--sm btn--ghost" id="btnLimpiarFiltro">Limpiar</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card">
+          <span class="kpi-card__label">Total Registros</span>
+          <span class="kpi-card__value" id="kpiTotal">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-card__label">Valor Promedio</span>
+          <span class="kpi-card__value" id="kpiPromedio">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-card__label">Vivienda Nueva</span>
+          <span class="kpi-card__value" id="kpiNueva">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-card__label">Vivienda Usada</span>
+          <span class="kpi-card__value" id="kpiUsada">—</span>
+        </div>
+      </div>
+
+      <!-- Gráficas -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-card__header">Distribución por Grupo</div>
+          <div class="chart-card__body">
+            <canvas id="chartGrupo"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card__header">Tipo de Vivienda</div>
+          <div class="chart-card__body">
+            <canvas id="chartTipo"></canvas>
+          </div>
+        </div>
+        <div class="chart-card chart-card--wide">
+          <div class="chart-card__header">Valor por Fraccionamiento (Top 10)</div>
+          <div class="chart-card__body">
+            <canvas id="chartFracc"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB: REGISTROS ─────────────────────────────── -->
+    <section class="tab-panel" id="tab-registros">
+      <div class="panel-header">
+        <h2>Tabla de Registros</h2>
+        <p>Todos los datos almacenados en el archivo Excel.</p>
+      </div>
+      <div class="table-toolbar">
+        <input type="text" id="tableSearch" placeholder="Buscar en todos los campos…" />
+        <button class="btn btn--sm" id="btnRefresh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          Actualizar
+        </button>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Institución</th>
+              <th>Año</th>
+              <th>Mes</th>
+              <th>Estado</th>
+              <th>Municipio</th>
+              <th>CP</th>
+              <th>Empresa</th>
+              <th>Valor</th>
+              <th>Segmento</th>
+              <th>Count</th>
+              <th>Tipo</th>
+              <th>Grupo</th>
+              <th>Fraccionamiento</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr class="empty-row">
+              <td colspan="14">Sin datos. Agrega registros en la pestaña Captura.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main><!-- /main -->
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <!-- App JS -->
+  <script src="app.js"></script>
+</body>
+</html>
