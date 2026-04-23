@@ -28,19 +28,23 @@
     <nav class="sidebar__nav">
       <button class="nav-btn active" data-tab="captura">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-        Captura
+        <span>Captura</span>
+      </button>
+      <button class="nav-btn" data-tab="importar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Importar</span>
       </button>
       <button class="nav-btn" data-tab="dashboard">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Dashboard
+        <span>Dashboard</span>
       </button>
       <button class="nav-btn" data-tab="registros">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        Registros
+        <span>Registros</span>
       </button>
     </nav>
 
-    <div class="sidebar__stats" id="sidebarStats">
+    <div class="sidebar__stats">
       <div class="stat-mini">
         <span class="stat-mini__label">Total registros</span>
         <span class="stat-mini__value" id="statTotal">—</span>
@@ -51,7 +55,6 @@
   <!-- ── MAIN ──────────────────────────────────────────── -->
   <main class="main">
 
-    <!-- HEADER -->
     <header class="topbar">
       <div class="topbar__title" id="pageTitle">Nueva Captura</div>
       <div class="topbar__actions">
@@ -63,30 +66,26 @@
     <section class="tab-panel active" id="tab-captura">
       <div class="panel-header">
         <h2>Registro de Vivienda</h2>
-        <p>Complete todos los campos. Los datos se almacenarán en el archivo Excel.</p>
+        <p>Complete todos los campos. Los datos se almacenarán en la base de datos.</p>
       </div>
 
-      <!-- Mensaje de estado -->
       <div class="alert hidden" id="formAlert"></div>
 
       <form id="capturaForm" novalidate>
         <div class="form-grid">
 
-          <!-- Institución -->
           <div class="field-group">
             <label for="institucion">Institución <span class="req">*</span></label>
             <input type="text" id="institucion" name="institucion" placeholder="Ej: BBVA, HSBC…" />
             <span class="field-error" id="err-institucion"></span>
           </div>
 
-          <!-- Año -->
           <div class="field-group">
             <label for="anio">Año <span class="req">*</span></label>
             <input type="number" id="anio" name="anio" placeholder="2010 – 2030" min="2010" max="2030" />
             <span class="field-error" id="err-anio"></span>
           </div>
 
-          <!-- Mes -->
           <div class="field-group">
             <label for="mes">Mes <span class="req">*</span></label>
             <input type="text" id="mes" name="mes" placeholder="Ej: abril o 4" />
@@ -94,35 +93,30 @@
             <span class="field-error" id="err-mes"></span>
           </div>
 
-          <!-- Estado -->
           <div class="field-group">
             <label for="estado">Estado <span class="req">*</span></label>
             <input type="text" id="estado" name="estado" placeholder="Ej: Jalisco" />
             <span class="field-error" id="err-estado"></span>
           </div>
 
-          <!-- Municipio -->
           <div class="field-group">
             <label for="municipio">Municipio <span class="req">*</span></label>
             <input type="text" id="municipio" name="municipio" placeholder="Ej: Guadalajara" />
             <span class="field-error" id="err-municipio"></span>
           </div>
 
-          <!-- CP -->
           <div class="field-group">
             <label for="cp">Código Postal <span class="req">*</span></label>
             <input type="text" id="cp" name="cp" placeholder="5 dígitos" maxlength="5" />
             <span class="field-error" id="err-cp"></span>
           </div>
 
-          <!-- Empresa Comercial -->
           <div class="field-group field-group--wide">
             <label for="empresa_comercial">Empresa Comercial <span class="req">*</span></label>
             <input type="text" id="empresa_comercial" name="empresa_comercial" placeholder="Nombre de la empresa" />
             <span class="field-error" id="err-empresa_comercial"></span>
           </div>
 
-          <!-- Valor -->
           <div class="field-group">
             <label for="valor">Valor <span class="req">*</span></label>
             <div class="input-prefix">
@@ -132,21 +126,18 @@
             <span class="field-error" id="err-valor"></span>
           </div>
 
-          <!-- Segmento -->
           <div class="field-group">
             <label for="segmento">Segmento <span class="req">*</span></label>
             <input type="text" id="segmento" name="segmento" placeholder="Ej: Medio, Residencial…" />
             <span class="field-error" id="err-segmento"></span>
           </div>
 
-          <!-- Count -->
           <div class="field-group">
             <label for="count">Count <span class="req">*</span></label>
             <input type="number" id="count" name="count" placeholder="Número de unidades" min="1" />
             <span class="field-error" id="err-count"></span>
           </div>
 
-          <!-- Tipo de Vivienda -->
           <div class="field-group">
             <label for="tipo_vivienda">Tipo de Vivienda <span class="req">*</span></label>
             <select id="tipo_vivienda" name="tipo_vivienda">
@@ -157,7 +148,6 @@
             <span class="field-error" id="err-tipo_vivienda"></span>
           </div>
 
-          <!-- Grupo -->
           <div class="field-group">
             <label for="grupo">Grupo <span class="req">*</span></label>
             <select id="grupo" name="grupo">
@@ -169,14 +159,13 @@
             <span class="field-error" id="err-grupo"></span>
           </div>
 
-          <!-- Fraccionamiento -->
           <div class="field-group field-group--wide">
             <label for="fraccionamiento">Fraccionamiento <span class="req">*</span></label>
             <input type="text" id="fraccionamiento" name="fraccionamiento" placeholder="Nombre del fraccionamiento" />
             <span class="field-error" id="err-fraccionamiento"></span>
           </div>
 
-        </div><!-- /form-grid -->
+        </div>
 
         <div class="form-actions">
           <button type="button" class="btn btn--ghost" id="btnLimpiar">
@@ -191,6 +180,68 @@
       </form>
     </section>
 
+    <!-- ── TAB: IMPORTAR ──────────────────────────────── -->
+    <section class="tab-panel" id="tab-importar">
+      <div class="panel-header">
+        <h2>Importar Excel</h2>
+        <p>Carga masiva de registros desde tu archivo .xlsx existente.</p>
+      </div>
+
+      <div class="import-box">
+        <!-- Zona de arrastre -->
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone__icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+          </div>
+          <p class="drop-zone__text">Arrastra tu archivo <strong>.xlsx</strong> aquí</p>
+          <p class="drop-zone__sub">o haz clic para seleccionarlo</p>
+          <input type="file" id="archivoExcel" accept=".xlsx,.xls" class="drop-zone__input" />
+        </div>
+
+        <!-- Info de columnas esperadas -->
+        <div class="import-info">
+          <div class="import-info__title">Columnas esperadas en tu Excel:</div>
+          <div class="import-info__cols">
+            <span>Institución</span><span>Año</span><span>Mes</span>
+            <span>Estado</span><span>Municipio</span><span>CP</span>
+            <span>Empresa Comercial</span><span>Valor</span><span>Segmento</span>
+            <span>Count</span><span>Tipo de Vivienda</span><span>Grupo</span>
+            <span>Fraccionamiento</span>
+          </div>
+          <p class="import-info__note">Los encabezados no son sensibles a mayúsculas. La primera fila debe contener los nombres de columna.</p>
+        </div>
+
+        <!-- Archivo seleccionado -->
+        <div class="import-file hidden" id="importFile">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span id="importFileName">archivo.xlsx</span>
+          <button class="btn-icon" id="btnRemoveFile" title="Quitar archivo">✕</button>
+        </div>
+
+        <!-- Botón importar -->
+        <div class="import-actions">
+          <button class="btn btn--primary btn--lg" id="btnImportar" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Importar Registros
+          </button>
+        </div>
+
+        <!-- Resultado -->
+        <div class="import-result hidden" id="importResult"></div>
+
+        <!-- Barra de progreso -->
+        <div class="progress-wrap hidden" id="progressWrap">
+          <div class="progress-bar" id="progressBar"></div>
+          <span class="progress-label" id="progressLabel">Procesando…</span>
+        </div>
+      </div>
+    </section>
+
     <!-- ── TAB: DASHBOARD ─────────────────────────────── -->
     <section class="tab-panel" id="tab-dashboard">
       <div class="panel-header">
@@ -198,7 +249,6 @@
         <p>Visualización y análisis de los registros capturados.</p>
       </div>
 
-      <!-- Filtro -->
       <div class="filter-bar">
         <label for="filtroFraccionamiento">Filtrar por Fraccionamiento:</label>
         <div class="filter-bar__input">
@@ -208,8 +258,7 @@
         </div>
       </div>
 
-      <!-- KPIs -->
-      <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi-grid">
         <div class="kpi-card">
           <span class="kpi-card__label">Total Registros</span>
           <span class="kpi-card__value" id="kpiTotal">—</span>
@@ -228,25 +277,18 @@
         </div>
       </div>
 
-      <!-- Gráficas -->
       <div class="charts-grid">
         <div class="chart-card">
           <div class="chart-card__header">Distribución por Grupo</div>
-          <div class="chart-card__body">
-            <canvas id="chartGrupo"></canvas>
-          </div>
+          <div class="chart-card__body"><canvas id="chartGrupo"></canvas></div>
         </div>
         <div class="chart-card">
           <div class="chart-card__header">Tipo de Vivienda</div>
-          <div class="chart-card__body">
-            <canvas id="chartTipo"></canvas>
-          </div>
+          <div class="chart-card__body"><canvas id="chartTipo"></canvas></div>
         </div>
         <div class="chart-card chart-card--wide">
-          <div class="chart-card__header">Valor por Fraccionamiento (Top 10)</div>
-          <div class="chart-card__body">
-            <canvas id="chartFracc"></canvas>
-          </div>
+          <div class="chart-card__header">Valor Promedio por Fraccionamiento (Top 10)</div>
+          <div class="chart-card__body"><canvas id="chartFracc"></canvas></div>
         </div>
       </div>
     </section>
@@ -255,7 +297,7 @@
     <section class="tab-panel" id="tab-registros">
       <div class="panel-header">
         <h2>Tabla de Registros</h2>
-        <p>Todos los datos almacenados en el archivo Excel.</p>
+        <p>Todos los datos almacenados en la base de datos.</p>
       </div>
       <div class="table-toolbar">
         <input type="text" id="tableSearch" placeholder="Buscar en todos los campos…" />
@@ -265,39 +307,25 @@
         </button>
       </div>
       <div class="table-wrapper">
-        <table class="data-table" id="dataTable">
+        <table class="data-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Institución</th>
-              <th>Año</th>
-              <th>Mes</th>
-              <th>Estado</th>
-              <th>Municipio</th>
-              <th>CP</th>
-              <th>Empresa</th>
-              <th>Valor</th>
-              <th>Segmento</th>
-              <th>Count</th>
-              <th>Tipo</th>
-              <th>Grupo</th>
-              <th>Fraccionamiento</th>
+              <th>#</th><th>Institución</th><th>Año</th><th>Mes</th>
+              <th>Estado</th><th>Municipio</th><th>CP</th><th>Empresa</th>
+              <th>Valor</th><th>Segmento</th><th>Count</th>
+              <th>Tipo</th><th>Grupo</th><th>Fraccionamiento</th>
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr class="empty-row">
-              <td colspan="14">Sin datos. Agrega registros en la pestaña Captura.</td>
-            </tr>
+            <tr class="empty-row"><td colspan="14">Sin datos.</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
-  </main><!-- /main -->
+  </main>
 
-  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-  <!-- App JS -->
   <script src="app.js"></script>
 </body>
 </html>
