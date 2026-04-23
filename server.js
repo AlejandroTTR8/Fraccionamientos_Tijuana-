@@ -12,10 +12,24 @@ const app = express();
 const PORT = process.env.PORT || 3000;
  
 // ─── Conexión a PostgreSQL ─────────────────────────────────────────────────
-// Railway inyecta DATABASE_URL automáticamente
+console.log('🔍 Buscando DATABASE_URL...');
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  console.error('❌ FATAL: DATABASE_URL no está configurada');
+  console.error('   En Railway, agrega la variable en el panel de "Variables"');
+  process.exit(1);
+}
+
+console.log('✓ DATABASE_URL encontrada');
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  connectionString: databaseUrl,
+  ssl: { rejectUnauthorized: false },
+});
+
+pool.on('error', (err) => {
+  console.error('❌ Error en Pool de PostgreSQL:', err.message);
 });
  
 // ─── Multer: recibir archivos Excel en memoria ─────────────────────────────
