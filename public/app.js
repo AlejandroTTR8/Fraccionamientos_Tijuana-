@@ -1,6 +1,6 @@
 /**
- * app.js — Frontend del Sistema de Viviendas
- * Maneja: navegación, formulario, validaciones, dashboard, tabla
+ * app.js — Frontend DataVivienda v2
+ * Incluye: navegación, formulario, importación masiva, dashboard, tabla
  */
 
 'use strict';
@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════
 // ESTADO GLOBAL
 // ═══════════════════════════════════════════════════════
-let todosLosRegistros = [];  // cache de datos del servidor
+let todosLosRegistros = [];
 let chartGrupo = null;
 let chartTipo  = null;
 let chartFracc = null;
@@ -16,8 +16,6 @@ let chartFracc = null;
 // ═══════════════════════════════════════════════════════
 // UTILIDADES
 // ═══════════════════════════════════════════════════════
-
-/** Convierte mes texto o número → número */
 const MES_MAP = {
   enero:1, febrero:2, marzo:3, abril:4, mayo:5, junio:6,
   julio:7, agosto:8, septiembre:9, octubre:10, noviembre:11, diciembre:12,
@@ -31,14 +29,12 @@ function convertirMes(val) {
   return MES_MAP[str] || null;
 }
 
-/** Formatear número como moneda MXN */
 function formatPeso(n) {
   return new Intl.NumberFormat('es-MX', {
     style: 'currency', currency: 'MXN', maximumFractionDigits: 0,
   }).format(n);
 }
 
-/** Obtener fecha y hora en formato legible */
 function fechaHoy() {
   return new Date().toLocaleDateString('es-MX', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -46,48 +42,38 @@ function fechaHoy() {
 }
 
 // ═══════════════════════════════════════════════════════
-// NAVEGACIÓN ENTRE PESTAÑAS
+// NAVEGACIÓN
 // ═══════════════════════════════════════════════════════
 const TABS = {
-  captura:   { btn: null, panel: null, title: 'Nueva Captura'    },
-  dashboard: { btn: null, panel: null, title: 'Dashboard'        },
-  registros: { btn: null, panel: null, title: 'Tabla de Datos'   },
+  captura:   { title: 'Nueva Captura'   },
+  importar:  { title: 'Importar Excel'  },
+  dashboard: { title: 'Dashboard'       },
+  registros: { title: 'Tabla de Datos'  },
 };
 
 function initNavegacion() {
   document.querySelectorAll('.nav-btn').forEach((btn) => {
-    const tab = btn.dataset.tab;
-    TABS[tab].btn   = btn;
-    TABS[tab].panel = document.getElementById(`tab-${tab}`);
-
-    btn.addEventListener('click', () => activarTab(tab));
+    btn.addEventListener('click', () => activarTab(btn.dataset.tab));
   });
 }
 
 function activarTab(nombre) {
-  Object.entries(TABS).forEach(([key, t]) => {
-    const isActive = key === nombre;
-    t.btn  && t.btn.classList.toggle('active', isActive);
-    t.panel && t.panel.classList.toggle('active', isActive);
-  });
-  document.getElementById('pageTitle').textContent = TABS[nombre].title;
+  document.querySelectorAll('.nav-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === nombre)
+  );
+  document.querySelectorAll('.tab-panel').forEach(p =>
+    p.classList.toggle('active', p.id === `tab-${nombre}`)
+  );
+  document.getElementById('pageTitle').textContent = TABS[nombre]?.title || '';
 
-  // Cargar datos al entrar al dashboard o registros
-  if (nombre === 'dashboard' || nombre === 'registros') {
-    cargarDatos();
-  }
+  if (nombre === 'dashboard' || nombre === 'registros') cargarDatos();
 }
 
 // ═══════════════════════════════════════════════════════
-// FORMULARIO — VALIDACIONES FRONTEND
+// FORMULARIO — VALIDACIONES
 // ═══════════════════════════════════════════════════════
-
-/**
- * Reglas de validación por campo.
- * Cada regla devuelve true si es válido, o un string de error.
- */
 const VALIDACIONES = {
-  institucion: (v) => v.trim() !== '' || 'La institución es obligatoria.',
+  institucion:      (v) => v.trim() !== '' || 'La institución es obligatoria.',
   anio: (v) => {
     const n = parseInt(v, 10);
     if (isNaN(n)) return 'El año debe ser un número.';
@@ -99,44 +85,39 @@ const VALIDACIONES = {
     if (!convertirMes(v)) return 'Mes inválido. Use 1-12 o nombre en español.';
     return true;
   },
-  estado: (v) => v.trim() !== '' || 'El estado es obligatorio.',
-  municipio: (v) => v.trim() !== '' || 'El municipio es obligatorio.',
-  cp: (v) => {
-    if (!/^\d{5}$/.test(v.trim())) return 'El CP debe tener exactamente 5 dígitos.';
-    return true;
-  },
-  empresa_comercial: (v) => v.trim() !== '' || 'La empresa comercial es obligatoria.',
+  estado:           (v) => v.trim() !== '' || 'El estado es obligatorio.',
+  municipio:        (v) => v.trim() !== '' || 'El municipio es obligatorio.',
+  cp:               (v) => /^\d{5}$/.test(v.trim()) || 'El CP debe tener exactamente 5 dígitos.',
+  empresa_comercial:(v) => v.trim() !== '' || 'La empresa comercial es obligatoria.',
   valor: (v) => {
     const n = parseFloat(v);
     if (isNaN(n)) return 'El valor debe ser numérico.';
     if (n < 300000) return 'El valor mínimo es $300,000.';
     return true;
   },
-  segmento: (v) => v.trim() !== '' || 'El segmento es obligatorio.',
+  segmento:  (v) => v.trim() !== '' || 'El segmento es obligatorio.',
   count: (v) => {
     const n = parseInt(v, 10);
     if (isNaN(n) || n < 1) return 'El count debe ser un entero positivo.';
     return true;
   },
   tipo_vivienda: (v) => {
-    const vals = ['VIVIENDA NUEVA', 'VIVIENDA USADA'];
-    if (!vals.includes(v.toUpperCase())) return 'Seleccione un tipo de vivienda válido.';
+    if (!['VIVIENDA NUEVA','VIVIENDA USADA'].includes(v.toUpperCase()))
+      return 'Seleccione un tipo de vivienda válido.';
     return true;
   },
   grupo: (v) => {
-    const vals = ['Bancos', 'Infonavit', 'Fovissste'];
-    if (!vals.includes(v)) return 'Seleccione un grupo válido.';
+    if (!['Bancos','Infonavit','Fovissste'].includes(v))
+      return 'Seleccione un grupo válido.';
     return true;
   },
   fraccionamiento: (v) => v.trim() !== '' || 'El fraccionamiento es obligatorio.',
 };
 
-/** Mostrar/ocultar error de un campo */
 function setFieldError(campo, msg) {
   const input = document.getElementById(campo);
   const errEl = document.getElementById(`err-${campo}`);
   if (!input || !errEl) return;
-
   if (msg) {
     errEl.textContent = msg;
     input.classList.add('invalid');
@@ -148,30 +129,20 @@ function setFieldError(campo, msg) {
   }
 }
 
-/** Validar un solo campo */
 function validarCampo(campo) {
   const input = document.getElementById(campo);
   if (!input) return true;
-  const resultado = VALIDACIONES[campo]?.(input.value);
-  if (resultado === true) {
-    setFieldError(campo, null);
-    return true;
-  } else {
-    setFieldError(campo, resultado);
-    return false;
-  }
+  const res = VALIDACIONES[campo]?.(input.value);
+  if (res === true) { setFieldError(campo, null); return true; }
+  else              { setFieldError(campo, res);  return false; }
 }
 
-/** Agregar validación en tiempo real (blur) */
 function initValidacionesEnVivo() {
   Object.keys(VALIDACIONES).forEach((campo) => {
     const input = document.getElementById(campo);
     if (input) {
-      input.addEventListener('blur', () => validarCampo(campo));
-      input.addEventListener('input', () => {
-        // Limpiar error si ya tiene contenido
-        if (input.value.trim()) setFieldError(campo, null);
-      });
+      input.addEventListener('blur',  () => validarCampo(campo));
+      input.addEventListener('input', () => { if (input.value.trim()) setFieldError(campo, null); });
     }
   });
 }
@@ -180,35 +151,23 @@ function initValidacionesEnVivo() {
 // FORMULARIO — ENVÍO
 // ═══════════════════════════════════════════════════════
 function initFormulario() {
-  const form   = document.getElementById('capturaForm');
+  const form    = document.getElementById('capturaForm');
   const btnSave = document.getElementById('btnGuardar');
-  const btnClr  = document.getElementById('btnLimpiar');
 
-  // Limpiar formulario
-  btnClr.addEventListener('click', limpiarFormulario);
+  document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
 
-  // Guardar
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    // Validar todos los campos
     let hayErrores = false;
-    Object.keys(VALIDACIONES).forEach((campo) => {
-      if (!validarCampo(campo)) hayErrores = true;
-    });
-    if (hayErrores) {
-      mostrarAlerta('Corrija los errores marcados antes de guardar.', 'error');
-      return;
-    }
+    Object.keys(VALIDACIONES).forEach((c) => { if (!validarCampo(c)) hayErrores = true; });
+    if (hayErrores) { mostrarAlerta('Corrija los errores marcados antes de guardar.', 'error'); return; }
 
-    // Construir payload
     const payload = {};
-    Object.keys(VALIDACIONES).forEach((campo) => {
-      const input = document.getElementById(campo);
-      if (input) payload[campo] = input.value;
+    Object.keys(VALIDACIONES).forEach((c) => {
+      const el = document.getElementById(c);
+      if (el) payload[c] = el.value;
     });
 
-    // Mostrar spinner
     btnSave.disabled = true;
     btnSave.innerHTML = '<span class="spinner"></span> Guardando…';
 
@@ -219,65 +178,154 @@ function initFormulario() {
         body: JSON.stringify(payload),
       });
       const data = await resp.json();
-
       if (data.ok) {
-        mostrarAlerta('✓ Registro guardado correctamente en el Excel.', 'success');
+        mostrarAlerta('✓ Registro guardado correctamente.', 'success');
         limpiarFormulario();
         actualizarStatTotal();
       } else {
-        const msgs = data.errores?.join(' | ') || 'Error al guardar.';
-        mostrarAlerta(msgs, 'error');
+        mostrarAlerta(data.errores?.join(' | ') || 'Error al guardar.', 'error');
       }
-    } catch (err) {
-      mostrarAlerta('No se pudo conectar con el servidor. Verifique que esté corriendo.', 'error');
+    } catch {
+      mostrarAlerta('No se pudo conectar con el servidor.', 'error');
     } finally {
       btnSave.disabled = false;
-      btnSave.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-          <polyline points="17 21 17 13 7 13 7 21"/>
-          <polyline points="7 3 7 8 15 8"/>
-        </svg>
-        Guardar Registro`;
+      btnSave.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar Registro`;
     }
   });
 }
 
-/** Limpiar todos los campos del formulario */
 function limpiarFormulario() {
   document.getElementById('capturaForm').reset();
-  Object.keys(VALIDACIONES).forEach((campo) => {
-    const input = document.getElementById(campo);
-    if (input) {
-      input.classList.remove('valid', 'invalid');
-    }
-    setFieldError(campo, null);
+  Object.keys(VALIDACIONES).forEach((c) => {
+    document.getElementById(c)?.classList.remove('valid', 'invalid');
+    setFieldError(c, null);
   });
   ocultarAlerta();
 }
 
 // ═══════════════════════════════════════════════════════
-// ALERTAS
+// ALERTAS (formulario)
 // ═══════════════════════════════════════════════════════
 function mostrarAlerta(msg, tipo = 'error') {
   const el = document.getElementById('formAlert');
   el.textContent = msg;
   el.className = `alert ${tipo}`;
   el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-  // Auto-ocultar en éxito después de 4s
-  if (tipo === 'success') {
-    setTimeout(ocultarAlerta, 4000);
-  }
+  if (tipo === 'success') setTimeout(ocultarAlerta, 4000);
 }
 
 function ocultarAlerta() {
-  const el = document.getElementById('formAlert');
-  el.className = 'alert hidden';
+  document.getElementById('formAlert').className = 'alert hidden';
 }
 
 // ═══════════════════════════════════════════════════════
-// CARGA DE DATOS DESDE EL SERVIDOR
+// IMPORTACIÓN MASIVA DE EXCEL
+// ═══════════════════════════════════════════════════════
+let archivoSeleccionado = null;
+
+function initImportacion() {
+  const dropZone    = document.getElementById('dropZone');
+  const fileInput   = document.getElementById('archivoExcel');
+  const importFile  = document.getElementById('importFile');
+  const fileName    = document.getElementById('importFileName');
+  const btnImportar = document.getElementById('btnImportar');
+  const btnRemove   = document.getElementById('btnRemoveFile');
+  const result      = document.getElementById('importResult');
+  const progressWrap= document.getElementById('progressWrap');
+  const progressBar = document.getElementById('progressBar');
+  const progressLbl = document.getElementById('progressLabel');
+
+  // Drag & Drop
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) seleccionarArchivo(file);
+  });
+
+  // Click en input
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) seleccionarArchivo(fileInput.files[0]);
+  });
+
+  // Quitar archivo
+  btnRemove.addEventListener('click', () => {
+    archivoSeleccionado = null;
+    fileInput.value = '';
+    importFile.classList.add('hidden');
+    btnImportar.disabled = true;
+    result.className = 'import-result hidden';
+  });
+
+  // Importar
+  btnImportar.addEventListener('click', async () => {
+    if (!archivoSeleccionado) return;
+
+    // UI: mostrar progreso
+    btnImportar.disabled = true;
+    btnImportar.innerHTML = '<span class="spinner"></span> Importando…';
+    result.className = 'import-result hidden';
+    progressWrap.classList.remove('hidden');
+    progressBar.style.width = '60%';
+    progressLbl.textContent = 'Enviando archivo al servidor…';
+
+    const formData = new FormData();
+    formData.append('archivo', archivoSeleccionado);
+
+    try {
+      progressBar.style.width = '80%';
+      progressLbl.textContent = 'Procesando registros…';
+
+      const resp = await fetch('/importar', { method: 'POST', body: formData });
+      const data = await resp.json();
+
+      progressBar.style.width = '100%';
+      progressLbl.textContent = 'Completado';
+
+      setTimeout(() => progressWrap.classList.add('hidden'), 800);
+
+      if (data.ok) {
+        result.className = 'import-result success';
+        result.innerHTML = `
+          ✓ ${data.mensaje}<br>
+          <small style="opacity:.8">
+            ${data.insertados} insertados
+            ${data.errores > 0 ? `· ${data.errores} con error` : ''}
+          </small>
+          ${data.detalleErrores?.length ? `<br><small style="opacity:.6">${data.detalleErrores.join('<br>')}</small>` : ''}
+        `;
+        actualizarStatTotal();
+      } else {
+        result.className = 'import-result error';
+        result.textContent = data.errores?.join(' | ') || 'Error al importar.';
+      }
+    } catch {
+      progressWrap.classList.add('hidden');
+      result.className = 'import-result error';
+      result.textContent = 'No se pudo conectar con el servidor.';
+    } finally {
+      btnImportar.disabled = false;
+      btnImportar.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Importar Registros`;
+    }
+  });
+
+  function seleccionarArchivo(file) {
+    if (!file.name.match(/\.(xlsx|xls)$/i)) {
+      alert('Solo se aceptan archivos .xlsx o .xls');
+      return;
+    }
+    archivoSeleccionado = file;
+    fileName.textContent = file.name;
+    importFile.classList.remove('hidden');
+    btnImportar.disabled = false;
+    result.className = 'import-result hidden';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// CARGA DE DATOS
 // ═══════════════════════════════════════════════════════
 async function cargarDatos() {
   try {
@@ -287,11 +335,9 @@ async function cargarDatos() {
       todosLosRegistros = data.registros || [];
       renderDashboard(todosLosRegistros);
       renderTabla(todosLosRegistros);
-      actualizarStatTotal();
+      document.getElementById('statTotal').textContent = todosLosRegistros.length;
     }
-  } catch (e) {
-    console.warn('No se pudieron cargar los datos:', e);
-  }
+  } catch (e) { console.warn('Error cargando datos:', e); }
 }
 
 async function actualizarStatTotal() {
@@ -309,98 +355,57 @@ async function actualizarStatTotal() {
 // DASHBOARD
 // ═══════════════════════════════════════════════════════
 function renderDashboard(registros) {
-  // KPIs
-  const total = registros.length;
-  const promedio = total > 0
-    ? registros.reduce((s, r) => s + (parseFloat(r.valor) || 0), 0) / total
-    : 0;
-  const nueva = registros.filter(r => String(r.tipo_vivienda).toUpperCase() === 'VIVIENDA NUEVA').length;
-  const usada = registros.filter(r => String(r.tipo_vivienda).toUpperCase() === 'VIVIENDA USADA').length;
+  const total    = registros.length;
+  const promedio = total ? registros.reduce((s, r) => s + (parseFloat(r.valor) || 0), 0) / total : 0;
+  const nueva    = registros.filter(r => String(r.tipo_vivienda).includes('NUEVA')).length;
+  const usada    = registros.filter(r => String(r.tipo_vivienda).includes('USADA')).length;
 
-  document.getElementById('kpiTotal').textContent   = total;
+  document.getElementById('kpiTotal').textContent    = total.toLocaleString('es-MX');
   document.getElementById('kpiPromedio').textContent = total ? formatPeso(promedio) : '—';
-  document.getElementById('kpiNueva').textContent   = nueva;
-  document.getElementById('kpiUsada').textContent   = usada;
+  document.getElementById('kpiNueva').textContent    = nueva.toLocaleString('es-MX');
+  document.getElementById('kpiUsada').textContent    = usada.toLocaleString('es-MX');
 
-  // Colores Chart.js adaptados al tema dark
   const paleta = ['#3d7fff','#a855f7','#ec4899','#22c55e','#f59e0b','#14b8a6'];
-  const chartDefaults = {
-    color: '#6b7a99',
-    borderColor: '#2a3347',
-    backgroundColor: 'transparent',
-  };
 
-  // ─ Gráfica: Grupo ─────────────────────────────────
+  // Gráfica Grupo
   const gruposConteo = {};
-  registros.forEach(r => {
-    const g = r.grupo || 'Desconocido';
-    gruposConteo[g] = (gruposConteo[g] || 0) + 1;
-  });
-
+  registros.forEach(r => { const g = r.grupo || 'N/D'; gruposConteo[g] = (gruposConteo[g] || 0) + 1; });
   if (chartGrupo) chartGrupo.destroy();
-  const ctxG = document.getElementById('chartGrupo').getContext('2d');
-  chartGrupo = new Chart(ctxG, {
+  chartGrupo = new Chart(document.getElementById('chartGrupo').getContext('2d'), {
     type: 'doughnut',
     data: {
       labels: Object.keys(gruposConteo),
-      datasets: [{
-        data: Object.values(gruposConteo),
-        backgroundColor: paleta,
-        borderColor: '#161b24',
-        borderWidth: 3,
-        hoverOffset: 6,
-      }],
+      datasets: [{ data: Object.values(gruposConteo), backgroundColor: paleta, borderColor: '#161b24', borderWidth: 3, hoverOffset: 6 }],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: '#6b7a99', padding: 14, font: { family: 'IBM Plex Sans', size: 11 } },
-        },
-      },
-      ...chartDefaults,
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { color: '#6b7a99', padding: 14, font: { family: 'IBM Plex Sans', size: 11 } } } },
     },
   });
 
-  // ─ Gráfica: Tipo de Vivienda ───────────────────────
+  // Gráfica Tipo
   if (chartTipo) chartTipo.destroy();
-  const ctxT = document.getElementById('chartTipo').getContext('2d');
-  chartTipo = new Chart(ctxT, {
+  chartTipo = new Chart(document.getElementById('chartTipo').getContext('2d'), {
     type: 'bar',
     data: {
       labels: ['Vivienda Nueva', 'Vivienda Usada'],
       datasets: [{
-        label: 'Cantidad',
-        data: [nueva, usada],
-        backgroundColor: ['rgba(34,197,94,.7)', 'rgba(245,158,11,.7)'],
-        borderColor:     ['#22c55e', '#f59e0b'],
-        borderWidth: 1.5,
-        borderRadius: 4,
+        label: 'Cantidad', data: [nueva, usada],
+        backgroundColor: ['rgba(34,197,94,.7)','rgba(245,158,11,.7)'],
+        borderColor: ['#22c55e','#f59e0b'], borderWidth: 1.5, borderRadius: 4,
       }],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-      },
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
       scales: {
-        x: {
-          ticks: { color: '#6b7a99', font: { family: 'IBM Plex Sans', size: 11 } },
-          grid: { color: '#2a3347' },
-        },
-        y: {
-          beginAtZero: true,
-          ticks: { color: '#6b7a99', font: { family: 'IBM Plex Mono', size: 11 }, stepSize: 1 },
-          grid: { color: '#2a3347' },
-        },
+        x: { ticks: { color: '#6b7a99', font: { family: 'IBM Plex Sans', size: 11 } }, grid: { color: '#2a3347' } },
+        y: { beginAtZero: true, ticks: { color: '#6b7a99', font: { family: 'IBM Plex Mono', size: 11 }, stepSize: 1 }, grid: { color: '#2a3347' } },
       },
     },
   });
 
-  // ─ Gráfica: Top 10 fraccionamientos por valor promedio ─
+  // Gráfica Fraccionamientos Top 10
   const fraccMap = {};
   registros.forEach(r => {
     const f = r.fraccionamiento || 'N/D';
@@ -408,96 +413,61 @@ function renderDashboard(registros) {
     fraccMap[f].suma  += parseFloat(r.valor) || 0;
     fraccMap[f].count += 1;
   });
-
-  const fraccOrdenados = Object.entries(fraccMap)
+  const top10 = Object.entries(fraccMap)
     .map(([k, v]) => ({ nombre: k, promedio: v.suma / v.count }))
     .sort((a, b) => b.promedio - a.promedio)
     .slice(0, 10);
 
   if (chartFracc) chartFracc.destroy();
-  const ctxF = document.getElementById('chartFracc').getContext('2d');
-  chartFracc = new Chart(ctxF, {
+  chartFracc = new Chart(document.getElementById('chartFracc').getContext('2d'), {
     type: 'bar',
     data: {
-      labels: fraccOrdenados.map(f => f.nombre),
-      datasets: [{
-        label: 'Valor Promedio',
-        data: fraccOrdenados.map(f => f.promedio),
-        backgroundColor: 'rgba(61,127,255,.7)',
-        borderColor: '#3d7fff',
-        borderWidth: 1.5,
-        borderRadius: 4,
-      }],
+      labels: top10.map(f => f.nombre),
+      datasets: [{ label: 'Valor Promedio', data: top10.map(f => f.promedio), backgroundColor: 'rgba(61,127,255,.7)', borderColor: '#3d7fff', borderWidth: 1.5, borderRadius: 4 }],
     },
     options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => ' ' + formatPeso(ctx.raw),
-          },
-        },
-      },
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ' ' + formatPeso(ctx.raw) } } },
       scales: {
-        x: {
-          ticks: {
-            color: '#6b7a99',
-            font: { family: 'IBM Plex Mono', size: 10 },
-            callback: (v) => '$' + Intl.NumberFormat('es-MX').format(v),
-          },
-          grid: { color: '#2a3347' },
-        },
-        y: {
-          ticks: { color: '#6b7a99', font: { family: 'IBM Plex Sans', size: 11 } },
-          grid: { display: false },
-        },
+        x: { ticks: { color: '#6b7a99', font: { family: 'IBM Plex Mono', size: 10 }, callback: (v) => '$' + Intl.NumberFormat('es-MX').format(v) }, grid: { color: '#2a3347' } },
+        y: { ticks: { color: '#6b7a99', font: { family: 'IBM Plex Sans', size: 11 } }, grid: { display: false } },
       },
     },
   });
 }
 
-// ─ Filtro de dashboard ─────────────────────────────────
 function initFiltroDashboard() {
-  document.getElementById('btnFiltrar').addEventListener('click', aplicarFiltroDashboard);
+  document.getElementById('btnFiltrar').addEventListener('click', aplicarFiltro);
   document.getElementById('btnLimpiarFiltro').addEventListener('click', () => {
     document.getElementById('filtroFraccionamiento').value = '';
     renderDashboard(todosLosRegistros);
   });
   document.getElementById('filtroFraccionamiento').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') aplicarFiltroDashboard();
+    if (e.key === 'Enter') aplicarFiltro();
   });
 }
 
-function aplicarFiltroDashboard() {
-  const filtro = document.getElementById('filtroFraccionamiento').value.trim().toLowerCase();
-  if (!filtro) {
-    renderDashboard(todosLosRegistros);
-    return;
-  }
-  const filtrados = todosLosRegistros.filter(
-    r => String(r.fraccionamiento || '').toLowerCase().includes(filtro)
-  );
+function aplicarFiltro() {
+  const q = document.getElementById('filtroFraccionamiento').value.trim().toLowerCase();
+  const filtrados = q
+    ? todosLosRegistros.filter(r => String(r.fraccionamiento || '').toLowerCase().includes(q))
+    : todosLosRegistros;
   renderDashboard(filtrados);
 }
 
 // ═══════════════════════════════════════════════════════
-// TABLA DE REGISTROS
+// TABLA
 // ═══════════════════════════════════════════════════════
 const MESES_NOMBRE = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
 function renderTabla(registros) {
   const tbody = document.getElementById('tableBody');
-
   if (!registros.length) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="14">Sin registros encontrados.</td></tr>`;
     return;
   }
-
   tbody.innerHTML = registros.map((r, i) => {
-    const tipoClass = String(r.tipo_vivienda || '').includes('NUEVA') ? 'nueva' : 'usada';
+    const tipoClass  = String(r.tipo_vivienda || '').includes('NUEVA') ? 'nueva' : 'usada';
     const grupoClass = String(r.grupo || '').toLowerCase();
     return `
       <tr>
@@ -515,15 +485,13 @@ function renderTabla(registros) {
         <td><span class="badge badge--${tipoClass}">${r.tipo_vivienda || ''}</span></td>
         <td><span class="badge badge--${grupoClass}">${r.grupo || ''}</span></td>
         <td>${r.fraccionamiento || ''}</td>
-      </tr>
-    `;
+      </tr>`;
   }).join('');
 }
 
 function initBusquedaTabla() {
-  const input = document.getElementById('tableSearch');
-  input.addEventListener('input', () => {
-    const q = input.value.toLowerCase();
+  document.getElementById('tableSearch').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
     const filtrados = todosLosRegistros.filter(r =>
       Object.values(r).some(v => String(v || '').toLowerCase().includes(q))
     );
@@ -531,27 +499,17 @@ function initBusquedaTabla() {
   });
 }
 
-function initRefreshTabla() {
-  document.getElementById('btnRefresh').addEventListener('click', cargarDatos);
-}
-
-// ═══════════════════════════════════════════════════════
-// TOPBAR FECHA
-// ═══════════════════════════════════════════════════════
-function initFecha() {
-  document.getElementById('topbarDate').textContent = fechaHoy();
-}
-
 // ═══════════════════════════════════════════════════════
 // INICIALIZACIÓN
 // ═══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('topbarDate').textContent = fechaHoy();
   initNavegacion();
   initFormulario();
   initValidacionesEnVivo();
+  initImportacion();
   initFiltroDashboard();
   initBusquedaTabla();
-  initRefreshTabla();
-  initFecha();
+  document.getElementById('btnRefresh').addEventListener('click', cargarDatos);
   actualizarStatTotal();
 });
