@@ -250,9 +250,9 @@
       </div>
 
       <div class="filter-bar">
-        <label for="filtroEmpresaComercial">Filtrar por Desarrolladora:</label>
+        <label for="filtroFraccionamiento">Filtrar por Fraccionamiento:</label>
         <div class="filter-bar__input">
-          <input type="text" id="filtroEmpresaComercial" placeholder="Escribe para filtrar…" />
+          <input type="text" id="filtroFraccionamiento" placeholder="Escribe para filtrar…" />
           <button class="btn btn--sm" id="btnFiltrar">Aplicar</button>
           <button class="btn btn--sm btn--ghost" id="btnLimpiarFiltro">Limpiar</button>
         </div>
@@ -297,29 +297,113 @@
     <section class="tab-panel" id="tab-registros">
       <div class="panel-header">
         <h2>Tabla de Registros</h2>
-        <p>Todos los datos almacenados en la base de datos.</p>
+        <p>Filtra, ordena y navega por todos los datos almacenados.</p>
       </div>
+
+      <!-- Toolbar superior -->
       <div class="table-toolbar">
-        <input type="text" id="tableSearch" placeholder="Buscar en todos los campos…" />
+        <input type="text" id="tableSearch" placeholder="🔍 Buscar en todos los campos…" />
         <button class="btn btn--sm" id="btnRefresh">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
           Actualizar
         </button>
       </div>
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>#</th><th>Institución</th><th>Año</th><th>Mes</th>
-              <th>Estado</th><th>Municipio</th><th>CP</th><th>Empresa</th>
-              <th>Valor</th><th>Segmento</th><th>Count</th>
-              <th>Tipo</th><th>Grupo</th><th>Fraccionamiento</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr class="empty-row"><td colspan="14">Sin datos.</td></tr>
-          </tbody>
-        </table>
+
+      <!-- Layout: sidebar lateral + tabla -->
+      <div class="table-layout">
+
+        <!-- Sidebar de filtros laterales -->
+        <aside class="table-sidebar">
+          <div class="table-sidebar__header">Filtros</div>
+          <div class="table-sidebar__body">
+
+            <div class="filter-group">
+              <label>Grupo</label>
+              <select id="fGrupo">
+                <option value="">Todos</option>
+                <option value="Bancos">Bancos</option>
+                <option value="Infonavit">Infonavit</option>
+                <option value="Fovissste">Fovissste</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>Tipo Vivienda</label>
+              <select id="fTipo">
+                <option value="">Todos</option>
+                <option value="VIVIENDA NUEVA">Nueva</option>
+                <option value="VIVIENDA USADA">Usada</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>Año</label>
+              <select id="fAnio">
+                <option value="">Todos</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>Estado</label>
+              <select id="fEstado">
+                <option value="">Todos</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>Registros/pág</label>
+              <select id="fPerPage">
+                <option value="25">25</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+              </select>
+            </div>
+
+            <button class="btn btn--ghost btn--sm filter-reset" id="btnResetFiltros">
+              Limpiar filtros
+            </button>
+
+            <div class="table-count" id="tableCount">— registros</div>
+
+          </div>
+        </aside>
+
+        <!-- Tabla principal -->
+        <div class="table-main">
+          <div class="table-wrapper">
+            <table class="data-table" id="dataTable">
+              <thead>
+                <tr>
+                  <th data-col="#"># <span class="sort-icon">↕</span></th>
+                  <th data-col="institucion">Institución <span class="sort-icon">↕</span></th>
+                  <th data-col="anio">Año <span class="sort-icon">↕</span></th>
+                  <th data-col="mes">Mes <span class="sort-icon">↕</span></th>
+                  <th data-col="estado">Estado <span class="sort-icon">↕</span></th>
+                  <th data-col="municipio">Municipio <span class="sort-icon">↕</span></th>
+                  <th data-col="cp">CP <span class="sort-icon">↕</span></th>
+                  <th data-col="empresa_comercial">Empresa <span class="sort-icon">↕</span></th>
+                  <th data-col="valor">Valor <span class="sort-icon">↕</span></th>
+                  <th data-col="segmento">Segmento <span class="sort-icon">↕</span></th>
+                  <th data-col="count">Count <span class="sort-icon">↕</span></th>
+                  <th data-col="tipo_vivienda">Tipo <span class="sort-icon">↕</span></th>
+                  <th data-col="grupo">Grupo <span class="sort-icon">↕</span></th>
+                  <th data-col="fraccionamiento">Fraccionamiento <span class="sort-icon">↕</span></th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr class="empty-row"><td colspan="14">Sin datos. Agrega registros o importa tu Excel.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación -->
+          <div class="pagination" id="pagination">
+            <span class="pagination__info" id="paginationInfo"></span>
+            <div class="pagination__controls" id="paginationControls"></div>
+          </div>
+        </div>
+
       </div>
     </section>
 
